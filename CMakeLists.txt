@@ -10,8 +10,12 @@ set(CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 file(GLOB HEADERS src/*.h)
 file(GLOB HEADERS_HPP src/*.hpp)
 
-set(sources src/particle_filter.cpp src/main.cpp ${HEADERS} ${HEADERS_HPP})
 
+set(sources src/particle_filter.cpp ${HEADERS} ${HEADERS_HPP} src/test.cpp)
+
+#[[
+set(sources src/particle_filter.cpp src/main.cpp ${HEADERS} ${HEADERS_HPP} src/test.cpp)
+]]
 
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
@@ -28,5 +32,4 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 add_executable(particle_filter ${sources})
 
 
-target_link_libraries(particle_filter z ssl uv uWS)
-
+#target_link_libraries(particle_filter z ssl uv uWS)
