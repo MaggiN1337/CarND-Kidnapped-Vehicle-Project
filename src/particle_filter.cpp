@@ -65,7 +65,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 void ParticleFilter::prediction(double delta_t, double std_pos[],
                                 double velocity, double yaw_rate) {
     /**
-     * TODO: Add measurements to each particle and add random Gaussian noise.
+     * Add measurements to each particle and add random Gaussian noise.
      * NOTE: When adding noise you may find std::normal_distribution
      *   and std::default_random_engine useful.
      *  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
@@ -89,6 +89,11 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
             particles[i].theta += yaw_rate * delta_t;
         }
 
+        // add noise
+        particles[i].x += std_x(randomEngine);
+        particles[i].y += std_y(randomEngine);
+        particles[i].theta += std_theta(randomEngine);
+
         if (debug) {
             std::cout << "Sample " << i + 1 << " " << particles[i].x << " " << particles[i].y << " "
                       << particles[i].theta << std::endl;
@@ -99,13 +104,41 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
 void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
                                      vector<LandmarkObs> &observations) {
     /**
-     * TODO: Find the predicted measurement that is closest to each
+     * Find the predicted measurement that is closest to each
      *   observed measurement and assign the observed measurement to this
      *   particular landmark.
      * NOTE: this method will NOT be called by the grading code. But you will
      *   probably find it useful to implement this method and use it as a helper
      *   during the updateWeights phase.
      */
+
+    //init distance to maximum value
+    double distance = std::numeric_limits<double>::max();
+
+    //iterate over all observations
+    for (int j = 0; j < observations.size(); j++) {
+
+        //init matching id to none existing value
+        int matching_id = -1;
+
+        //iterate over all predictions
+        for (int i = 0; i < predicted.size(); i++) {
+
+            //calc distance between observation and prediction
+            double current_distance = dist(predicted[i].x, predicted[i].y, observations[j].x, observations[j].y);
+
+            //store min distanec and id of prediction
+            if (current_distance < distance) {
+                distance = current_distance;
+                matching_id = predicted[i].id;
+            }
+        }
+        observations[j].id = matching_id;
+
+        if (debug) {
+            std::cout << "Matching points " << j << " " << observations[j].id << std::endl;
+        }
+    }
 
 }
 

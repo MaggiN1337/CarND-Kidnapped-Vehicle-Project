@@ -22,12 +22,17 @@ int main() {
 
     // Landmark measurement uncertainty [x [m], y [m]]
     double std [3] = {0.3, 0.3, 0.4};
-    double std_2[3] = {0.5, 0.5, 0.5};
 
     // Create particle filter
     ParticleFilter pf;
     pf.init(1,1,1,std);
-    pf.prediction(1,std_2,1,1);
+
+    double std_2[3] = {0.5, 0.5, 0.5};
+    pf.prediction(1,std_2,1,0.1);
+
+    std::vector<LandmarkObs> pred{{1, 0.5, 0.5},{2, 1.6, 0.5},{3, 2.5, 0.9}};
+    std::vector<LandmarkObs> observ{{1, 0.5, 0.6},{2, 2.5, 0.8},{3, 1.6, 0.5}};
+    pf.dataAssociation(pred, observ);
 
     return 0;
 
