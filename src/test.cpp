@@ -9,15 +9,6 @@
 
 using std::normal_distribution;
 
-/**
- * Prints samples of x, y and theta from a normal distribution
- * @param gps_x   GPS provided x position
- * @param gps_y   GPS provided y position
- * @param theta   GPS provided yaw
- */
-void printSamples(double gps_x, double gps_y, double theta);
-
-
 int main() {
 
     // Landmark measurement uncertainty [x [m], y [m]]
