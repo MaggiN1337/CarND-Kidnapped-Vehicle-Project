@@ -45,10 +45,10 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
      * NOTE: Consult particle_filter.h for more information about this method
      *   (and others in this file).
      */
-    num_particles = 10;  // TODO: Set the number of particles
-    normal_distribution<double> std_x(x, std[0]);
-    normal_distribution<double> std_y(y, std[1]);
-    normal_distribution<double> std_theta(theta, std[2]);
+    num_particles = 100;  // TODO: Set the number of particles
+    normal_distribution<double> std_x(0, std[0]);
+    normal_distribution<double> std_y(0, std[1]);
+    normal_distribution<double> std_theta(0, std[2]);
 
     for (int i = 0; i < num_particles; i++) {
         // add gausian noice to each particle
@@ -60,6 +60,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
         p.weight = 1.0;
 
         particles.push_back(p);
+        weights.push_back(p.weight);
 
         if (debug) {
             std::cout << "Sample " << i + 1 << " " << p.x << " " << p.y << " " << p.theta << std::endl;
@@ -86,7 +87,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
 
     //calculate new state of each particle
     for (int i = 0; i < num_particles; i++) {
-        if (fabs(yaw_rate) < 0.0001) {
+        if (fabs(yaw_rate) < 0.00001) {
             particles[i].x += velocity * delta_t * cos(particles[i].theta);
             particles[i].y += velocity * delta_t * sin(particles[i].theta);
         } else {
@@ -120,20 +121,20 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
      *   during the updateWeights phase.
      */
 
-    //init distance to maximum value for the case that no neighbor is found
-    double distance = std::numeric_limits<double>::max();
 
     //iterate over all observations
-    for (unsigned int j = 0; j < observations.size(); j++) {
+    for (unsigned int i = 0; i < observations.size(); i++) {
 
+        //init distance to maximum value for the case that no neighbor is found
+        double distance = std::numeric_limits<double>::max();
         //init matching id to none existing value
         int matching_id = -1;
 
         //iterate over all predictions
-        for (unsigned int i = 0; i < predicted.size(); i++) {
+        for (unsigned int j = 0; j < predicted.size(); j++) {
 
             //calc distance between observation and prediction
-            double current_distance = dist(predicted[i].x, predicted[i].y, observations[j].x, observations[j].y);
+            double current_distance = dist(observations[i].x, observations[i].y, predicted[j].x, predicted[j].y);
 
             //store min distance and id of prediction
             if (current_distance < distance) {
@@ -141,10 +142,10 @@ void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted,
                 matching_id = predicted[i].id;
             }
         }
-        observations[j].id = matching_id;
+        observations[i].id = matching_id;
 
         if (debug) {
-            std::cout << "Matching points " << j << " " << observations[j].id << std::endl;
+            std::cout << "Matching points " << i << " " << observations[i].id << std::endl;
         }
     }
 
@@ -191,12 +192,12 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
         vector<LandmarkObs> transformed_observations;
         for (unsigned int j = 0; j < observations.size(); j++) {
             // transform to map x coordinate
-            double x_map = particles[i].x + (cos(particles[i].theta) * transformed_observations[j].x) -
-                           (sin(particles[i].theta) * transformed_observations[j].y);
+            double x_map = particles[i].x + (cos(particles[i].theta) * observations[j].x) -
+                           (sin(particles[i].theta) * observations[j].y);
 
             // transform to map y coordinate
-            double y_map = particles[i].y + (sin(particles[i].theta) * transformed_observations[j].x) +
-                           (cos(particles[i].theta) * transformed_observations[j].y);
+            double y_map = particles[i].y + (sin(particles[i].theta) * observations[j].x) +
+                           (cos(particles[i].theta) * observations[j].y);
 
             transformed_observations.push_back(LandmarkObs{observations[j].id, x_map, y_map});
         }
@@ -213,7 +214,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
             int associated_prediction = transformed_observations[j].id;
 
             // get the x,y coordinates of the prediction associated with the current observation
-            for (unsigned int k = 0; k < transformed_observations.size(); k++) {
+            for (unsigned int k = 0; k < predictions_in_range.size(); k++) {
                 if (predictions_in_range[k].id == associated_prediction) {
                     pr_x = predictions_in_range[k].x;
                     pr_y = predictions_in_range[k].y;

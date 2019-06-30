@@ -25,6 +25,24 @@ int main() {
     std::vector<LandmarkObs> observ{{1, 0.5, 0.6},{2, 2.5, 0.8},{3, 1.6, 0.5}};
     pf.dataAssociation(pred, observ);
 
+    // Set up parameters here
+    double delta_t = 0.1;  // Time elapsed between measurements [sec]
+    double sensor_range = 50;  // Sensor range [m]
+
+    // GPS measurement uncertainty [x [m], y [m], theta [rad]]
+    double sigma_pos [3] = {0.3, 0.3, 0.01};
+    // Landmark measurement uncertainty [x [m], y [m]]
+    double sigma_landmark [2] = {0.3, 0.3};
+
+    // Read map data
+    Map map;
+    if (!read_map_data("../data/map_data.txt", map)) {
+        std::cout << "Error: Could not open map file" << std::endl;
+        return -1;
+    }
+
+    pf.updateWeights(sensor_range, sigma_landmark, observ, map);
+
     return 0;
 
 }
